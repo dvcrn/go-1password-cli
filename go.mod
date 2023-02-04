@@ -1,4 +1,4 @@
-module github.com/dvcrn/go-op-cli
+module github.com/dvcrn/go-1password-cli
 
 go 1.19
 
