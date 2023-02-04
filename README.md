@@ -1,4 +1,4 @@
-# go-op-cli
+# go-1password-cli
 
 Super thin wrapper around 1passwords `op` CLI tool. 
 
@@ -9,7 +9,7 @@ Super thin wrapper around 1passwords `op` CLI tool.
 
 ## Installation
 ```
-go get github.com/dvcrn/go-op-cli
+go get github.com/dvcrn/go-1password-cli
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ go get github.com/dvcrn/go-op-cli
 package main
 
 import (
-    "github.com/dvcrn/go-op-cli/op"
+    "github.com/dvcrn/go-1password-cli/op"
 )
 
 func main() {
