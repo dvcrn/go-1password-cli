@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	client := op.Client()
+	client := op.NewOpClient()
 
 	// get all vaults
 	vaults, err := client.Vaults()
