@@ -1,4 +1,4 @@
-# go-1p-cli
+# go-op-cli
 
 Super thin wrapper around 1passwords `op` CLI tool. 
 
