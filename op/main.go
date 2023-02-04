@@ -123,15 +123,21 @@ func (c *Client) VaultItem(itemIDOrName string, vaultIDOrName string) (*Item, er
 	return &out, nil
 }
 
-// LookupField does a lookup of a specific field within an item, within a vault
-// This is equivalent to op read op://<vault>/<item>/<field>
-func (c *Client) LookupField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error) {
-
-	lookupString := fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
-	out, err := c.runOp("read", []string{lookupString})
+// ReadItemField does a lookup of a specific field within an item, within a vault
+// `lookupIdentifier` is a string in the format `op://<vault>/<item>/<field>`
+// This is equivalent to `op read op://<vault>/<item>/<field>`
+func (c *Client) Read(lookupIdentifier string) (string, error) {
+	out, err := c.runOp("read", []string{lookupIdentifier})
 	if err != nil {
 		return "", err
 	}
 
 	return string(out), nil
+}
+
+// ReadItemField does a lookup of a specific field within an item, within a vault
+// This is equivalent to `op read op://<vault>/<item>/<field>`
+func (c *Client) ReadItemField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error) {
+	lookupString := fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
+	return c.Read(lookupString)
 }

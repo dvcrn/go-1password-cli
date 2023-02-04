@@ -106,13 +106,13 @@ func (c *OpClient) Item(itemIDOrName string) (*Item, error)
 
 Item returns an item by its ID or name, across all Vaults the user has access to To get items scoped to a specific Vault, use VaultItem\(\)
 
-### func \(\*OpClient\) LookupField
+### func \(\*OpClient\) ReadItemField
 
 ```go
-func (c *OpClient) LookupField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error)
+func (c *OpClient) ReadItemField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error)
 ```
 
-LookupField does a lookup of a specific field within an item, within a vault This is equivalent to op read op://\<vault\>/\<item\>/\<field\>
+ReadItemField does a lookup of a specific field within an item, within a vault This is equivalent to op read op://\<vault\>/\<item\>/\<field\>
 
 ### func \(\*OpClient\) Vault
 
