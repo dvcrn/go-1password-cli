@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -132,7 +133,7 @@ func (c *Client) Read(lookupIdentifier string) (string, error) {
 		return "", err
 	}
 
-	return string(out), nil
+	return strings.TrimSpace(string(out)), nil
 }
 
 // ReadItemField does a lookup of a specific field within an item, within a vault
