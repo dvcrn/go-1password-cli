@@ -17,11 +17,21 @@ type Vault struct {
 	Name           string `json:"name"`
 }
 
+type Field struct {
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	Purpose   string `json:"purpose,omitempty"`
+	Label     string `json:"label"`
+	Reference string `json:"reference"`
+	Value     string `json:"value,omitempty"`
+}
+
 type Item struct {
 	AdditionalInformation string    `json:"additional_information,omitempty"`
 	Category              string    `json:"category"`
 	CreatedAt             time.Time `json:"created_at"`
 	Favorite              bool      `json:"favorite,omitempty"`
+	Fields                []Field   `json:"fields"`
 	ID                    string    `json:"id"`
 	LastEditedBy          string    `json:"last_edited_by"`
 	Tags                  []string  `json:"tags,omitempty"`
