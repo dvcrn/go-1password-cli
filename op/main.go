@@ -3,6 +3,7 @@ package op
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -151,4 +152,37 @@ func (c *Client) Read(lookupIdentifier string) (string, error) {
 func (c *Client) ReadItemField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error) {
 	lookupString := fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
 	return c.Read(lookupString)
+}
+
+// EditItemField edits the fields of a specific item.
+// This is equivalent to `op item edit <itemID> assignment ...
+func (c *Client) EditItemField(vaultIdOrName string, itemIdOrName string, assignments ...Assignment) (*Item, error) {
+
+	if len(assignments) == 0 {
+		return nil, errors.New("no assignments specified")
+	}
+
+	item, err := c.VaultItem(itemIdOrName, vaultIdOrName)
+	if err != nil {
+		return nil, err
+	}
+
+	args := make([]string, 0, len(assignments)+2)
+	args = append(args, "edit", item.ID)
+	for _, assignment := range assignments {
+		args = append(args, fmt.Sprintf("%s=%s", assignment.Name, assignment.Value))
+	}
+
+	var out Item
+	err = c.runOpAndUnmarshal("item", args, &out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// Assignment of a field value to the item. used in EditItemField.
+type Assignment struct {
+	Name  string
+	Value string
 }

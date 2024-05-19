@@ -114,6 +114,15 @@ func (c *OpClient) ReadItemField(vaultIdOrName string, itemIdOrName string, fiel
 
 ReadItemField does a lookup of a specific field within an item, within a vault This is equivalent to op read op://\<vault\>/\<item\>/\<field\>
 
+### func \(\*OpClient\) EditItemField
+
+```go
+func (c *OpClient) EditItemField(vaultIdOrName string, itemIdOrName string, assignments ...Assignment) (*Item, error)
+```
+
+EditItemField does a lookup of a specific field within an item, within a vault and edit the fields in the item. This is equivalent to op item edit <item-id> field=value ...
+
+
 ### func \(\*OpClient\) Vault
 
 ```go
