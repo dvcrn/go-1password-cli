@@ -1,6 +1,6 @@
 # go-1password-cli
 
-Super thin wrapper around 1passwords `op` CLI tool. 
+Super thin wrapper around 1passwords `op` CLI tool.
 
 **Note:** This is not for the secret automation API, but for the CLI tool. There is no authentication, you need to have the `op` CLI tool installed and logged in.
 
@@ -106,6 +106,12 @@ func (c *OpClient) Item(itemIDOrName string) (*Item, error)
 
 Item returns an item by its ID or name, across all Vaults the user has access to To get items scoped to a specific Vault, use VaultItem\(\)
 
+```go
+func (c *Client) CreateItem(vaultIDOrName string, category string, title string, opts ...ItemCreateOption) (*Item, error) {
+```
+
+Creates a new item in the specified Vault
+
 ### func \(\*OpClient\) ReadItemField
 
 ```go
@@ -128,6 +134,12 @@ EditItemField does a lookup of a specific field within an item, within a vault a
 ```go
 func (c *OpClient) Vault(vaultIDOrName string) (*Vault, error)
 ```
+
+```go
+func (c *Client) CreateVault(name string, opts ...VaultCreateOption) (*Vault, error) {
+```
+
+Creates a new Vault
 
 Vault retrieves a vault by its ID or name If you have a Vault named "Private", you can specify this as either "Private" or with its ID
 

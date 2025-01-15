@@ -186,3 +186,141 @@ type Assignment struct {
 	Name  string
 	Value string
 }
+
+// CreateVault creates a new vault with the given name and optional parameters
+func (c *Client) CreateVault(name string, opts ...VaultCreateOption) (*Vault, error) {
+	args := []string{"create", name}
+
+	// Apply options
+	for _, opt := range opts {
+		opt.apply(&args)
+	}
+
+	var out Vault
+	err := c.runOpAndUnmarshal("vault", args, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
+// CreateItem creates a new item in the specified vault
+func (c *Client) CreateItem(vaultIDOrName string, category string, title string, opts ...ItemCreateOption) (*Item, error) {
+	args := []string{"create",
+		"--vault", vaultIDOrName,
+		"--category", category,
+		"--title", title,
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt.apply(&args)
+	}
+
+	var out Item
+	err := c.runOpAndUnmarshal("item", args, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
+// VaultCreateOption represents options for vault creation
+type VaultCreateOption interface {
+	apply(*[]string)
+}
+
+// ItemCreateOption represents options for item creation
+type ItemCreateOption interface {
+	apply(*[]string)
+}
+
+// Vault creation options
+type vaultDescription string
+type vaultIcon string
+type vaultAllowAdminsToManage bool
+
+func (d vaultDescription) apply(args *[]string) {
+	*args = append(*args, "--description", string(d))
+}
+
+func (i vaultIcon) apply(args *[]string) {
+	*args = append(*args, "--icon", string(i))
+}
+
+func (a vaultAllowAdminsToManage) apply(args *[]string) {
+	*args = append(*args, "--allow-admins-to-manage", fmt.Sprintf("%t", bool(a)))
+}
+
+// WithVaultDescription sets the vault description
+func WithVaultDescription(description string) VaultCreateOption {
+	return vaultDescription(description)
+}
+
+// WithVaultIcon sets the vault icon
+func WithVaultIcon(icon string) VaultCreateOption {
+	return vaultIcon(icon)
+}
+
+// WithVaultAllowAdminsToManage sets whether administrators can manage the vault
+func WithVaultAllowAdminsToManage(allow bool) VaultCreateOption {
+	return vaultAllowAdminsToManage(allow)
+}
+
+// Item creation options
+type itemURL string
+type itemGeneratePassword string
+type itemFavorite bool
+type itemTags []string
+type itemAssignments []Assignment
+
+func (u itemURL) apply(args *[]string) {
+	*args = append(*args, "--url", string(u))
+}
+
+func (g itemGeneratePassword) apply(args *[]string) {
+	*args = append(*args, "--generate-password="+string(g))
+}
+
+func (f itemFavorite) apply(args *[]string) {
+	if bool(f) {
+		*args = append(*args, "--favorite")
+	}
+}
+
+func (t itemTags) apply(args *[]string) {
+	*args = append(*args, "--tags", strings.Join([]string(t), ","))
+}
+
+func (a itemAssignments) apply(args *[]string) {
+	for _, assignment := range a {
+		*args = append(*args, fmt.Sprintf("%s=%s", assignment.Name, assignment.Value))
+	}
+}
+
+// WithItemURL sets the item URL
+func WithItemURL(url string) ItemCreateOption {
+	return itemURL(url)
+}
+
+// WithItemGeneratePassword adds a generated password with optional recipe
+func WithItemGeneratePassword(recipe string) ItemCreateOption {
+	return itemGeneratePassword(recipe)
+}
+
+// WithItemFavorite marks the item as favorite
+func WithItemFavorite(favorite bool) ItemCreateOption {
+	return itemFavorite(favorite)
+}
+
+// WithItemTags sets the item tags
+func WithItemTags(tags []string) ItemCreateOption {
+	return itemTags(tags)
+}
+
+// WithItemAssignments sets field assignments for the item
+func WithItemAssignments(assignments []Assignment) ItemCreateOption {
+	return itemAssignments(assignments)
+}
