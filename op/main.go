@@ -324,3 +324,38 @@ func WithItemTags(tags []string) ItemCreateOption {
 func WithItemAssignments(assignments []Assignment) ItemCreateOption {
 	return itemAssignments(assignments)
 }
+
+// ItemListOption represents options for listing items
+type ItemListOption interface {
+	apply(*[]string)
+}
+
+// Item list options
+type itemListTags []string
+
+func (t itemListTags) apply(args *[]string) {
+	*args = append(*args, "--tags", strings.Join([]string(t), ","))
+}
+
+// WithTags filters items by tags when listing
+func WithTags(tags []string) ItemListOption {
+	return itemListTags(tags)
+}
+
+// ItemsByVault returns a list of items in the specified vault
+func (c *Client) ItemsByVault(vaultIDOrName string, opts ...ItemListOption) ([]*Item, error) {
+	args := []string{"list", "--vault", vaultIDOrName}
+
+	// Apply options
+	for _, opt := range opts {
+		opt.apply(&args)
+	}
+
+	var out []*Item
+	err := c.runOpAndUnmarshal("item", args, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
