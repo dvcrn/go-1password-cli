@@ -1,0 +1,10 @@
+[tools]
+go = "1.25.1"
+
+[tasks.fmt]
+run = "go tool goimports ./... && go tool gofumpt ./..."
+description = "Format code and run vet"
+
+[tasks.lint]
+run = "go tool golangci-lint run"
+description = "Run golangci-lint"
