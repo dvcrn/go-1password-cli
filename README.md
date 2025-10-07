@@ -48,6 +48,8 @@ func main() {
   - [func (c *OpClient) Vault(vaultIDOrName string) (*Vault, error)](<#func-opclient-vault>)
   - [func (c *OpClient) VaultItem(itemIDOrName string, vaultIDOrName string) (*Item, error)](<#func-opclient-vaultitem>)
   - [func (c *OpClient) Vaults() ([]*Vault, error)](<#func-opclient-vaults>)
+  - [func (c *Client) VaultItems(itemIDsOrNames []string, vaultIDOrName string) ([]*Item, error)](<#func-client-vaultitems>)
+  - [func (c *Client) Items(itemIDsOrNames []string) ([]*Item, error)](<#func-client-items>)
 
 
 ## type Item
@@ -158,3 +160,33 @@ func (c *OpClient) Vaults() ([]*Vault, error)
 ```
 
 Vaults returns a list of all vaults in the current 1Password account
+
+### func (\*Client) VaultItems
+
+```go
+func (c *Client) VaultItems(itemIDsOrNames []string, vaultIDOrName string) ([]*Item, error)
+```
+
+Fetch multiple items in a single `op` CLI call scoped to a vault. Uses `op item get -` with a JSON array on stdin for speed.
+
+Example:
+
+```go
+client := op.NewOpClient()
+items, err := client.VaultItems([]string{"Slack (angr)", "angr.slack.com", "Netspotapp"}, "Personal")
+```
+
+### func (\*Client) Items
+
+```go
+func (c *Client) Items(itemIDsOrNames []string) ([]*Item, error)
+```
+
+Fetch multiple items across all accessible vaults in one call. Uses the same batching strategy as `VaultItems` but without a vault filter.
+
+Example:
+
+```go
+client := op.NewOpClient()
+items, err := client.Items([]string{"Slack (angr)", "angr.slack.com"})
+```
