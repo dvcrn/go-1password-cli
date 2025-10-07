@@ -1,15 +1,15 @@
 package op
 
 import (
-    "bytes"
-    "encoding/json"
-    "errors"
-    "fmt"
-    "io"
-    "os"
-    "os/exec"
-    "strings"
-    "time"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
 )
 
 type Client struct{}
@@ -57,16 +57,16 @@ func NewOpClient() *Client {
 }
 
 func (c *Client) runOp(opCmd string, args []string) ([]byte, error) {
-    cmdArgs := []string{opCmd}
-    cmdArgs = append(cmdArgs, args...)
-    cmdArgs = append(cmdArgs, "--format", "json")
+	cmdArgs := []string{opCmd}
+	cmdArgs = append(cmdArgs, args...)
+	cmdArgs = append(cmdArgs, "--format", "json")
 
-    cmd := exec.Command("op", cmdArgs...)
-    if os.Getenv("OP_GO_DEBUG") != "" {
-        fmt.Fprintf(os.Stderr, "[op-go] cmd: op %s\n", strings.Join(cmdArgs, " "))
-    }
-    errBuf := bytes.NewBuffer(nil)
-    cmd.Stderr = errBuf
+	cmd := exec.Command("op", cmdArgs...)
+	if os.Getenv("OP_GO_DEBUG") != "" {
+		fmt.Fprintf(os.Stderr, "[op-go] cmd: op %s\n", strings.Join(cmdArgs, " "))
+	}
+	errBuf := bytes.NewBuffer(nil)
+	cmd.Stderr = errBuf
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -81,32 +81,32 @@ func (c *Client) runOp(opCmd string, args []string) ([]byte, error) {
 
 // runOpWithInput runs an op CLI command and writes the provided stdin.
 func (c *Client) runOpWithInput(opCmd string, args []string, stdin []byte) ([]byte, error) {
-    cmdArgs := []string{opCmd}
-    cmdArgs = append(cmdArgs, args...)
-    cmdArgs = append(cmdArgs, "--format", "json")
+	cmdArgs := []string{opCmd}
+	cmdArgs = append(cmdArgs, args...)
+	cmdArgs = append(cmdArgs, "--format", "json")
 
-    cmd := exec.Command("op", cmdArgs...)
-    cmd.Stdin = bytes.NewReader(stdin)
-    if os.Getenv("OP_GO_DEBUG") != "" {
-        preview := string(stdin)
-        if len(preview) > 512 {
-            preview = preview[:512] + "..."
-        }
-        fmt.Fprintf(os.Stderr, "[op-go] cmd: op %s\n[op-go] stdin:\n%s\n", strings.Join(cmdArgs, " "), preview)
-    }
+	cmd := exec.Command("op", cmdArgs...)
+	cmd.Stdin = bytes.NewReader(stdin)
+	if os.Getenv("OP_GO_DEBUG") != "" {
+		preview := string(stdin)
+		if len(preview) > 512 {
+			preview = preview[:512] + "..."
+		}
+		fmt.Fprintf(os.Stderr, "[op-go] cmd: op %s\n[op-go] stdin:\n%s\n", strings.Join(cmdArgs, " "), preview)
+	}
 
-    errBuf := bytes.NewBuffer(nil)
-    cmd.Stderr = errBuf
+	errBuf := bytes.NewBuffer(nil)
+	cmd.Stderr = errBuf
 
-    out, err := cmd.Output()
-    if err != nil {
-        if errBuf.String() != "" {
-            return nil, fmt.Errorf("op returned err: %s", errBuf.String())
-        }
-        return nil, err
-    }
+	out, err := cmd.Output()
+	if err != nil {
+		if errBuf.String() != "" {
+			return nil, fmt.Errorf("op returned err: %s", errBuf.String())
+		}
+		return nil, err
+	}
 
-    return out, nil
+	return out, nil
 }
 
 func (c *Client) runOpAndUnmarshal(opCmd string, args []string, unmarshalInto any) error {
@@ -173,60 +173,64 @@ func (c *Client) VaultItem(itemIDOrName string, vaultIDOrName string) (*Item, er
 // VaultItems returns items by IDs or names within the specified vault using
 // a single `op item get -` invocation. Input is provided on stdin as a JSON
 // array of objects with an `id` key, e.g.:
-//   [{"id":"Slack (angr)"}, {"id":"angr.slack.com"}]
+//
+//	[{"id":"Slack (angr)"}, {"id":"angr.slack.com"}]
+//
 // If the batch call fails, the error is returned without fallback.
 func (c *Client) VaultItems(itemIDsOrNames []string, vaultIDOrName string) ([]*Item, error) {
-    if len(itemIDsOrNames) == 0 {
-        return nil, errors.New("no items specified")
-    }
+	if len(itemIDsOrNames) == 0 {
+		return nil, errors.New("no items specified")
+	}
 
-    // Build JSON array payload: [{"id": specifier}, ...]
-    type spec struct{ ID string `json:"id"` }
-    payload := make([]spec, 0, len(itemIDsOrNames))
-    for _, s := range itemIDsOrNames {
-        payload = append(payload, spec{ID: s})
-    }
-    stdinBytes, err := json.Marshal(payload)
-    if err != nil {
-        return nil, err
-    }
+	// Build JSON array payload: [{"id": specifier}, ...]
+	type spec struct {
+		ID string `json:"id"`
+	}
+	payload := make([]spec, 0, len(itemIDsOrNames))
+	for _, s := range itemIDsOrNames {
+		payload = append(payload, spec{ID: s})
+	}
+	stdinBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
 
-    // Prepare args with optional vault scoping
-    args := []string{"get", "-"}
-    if vaultIDOrName != "" {
-        args = append(args, "--vault", vaultIDOrName)
-    }
+	// Prepare args with optional vault scoping
+	args := []string{"get", "-"}
+	if vaultIDOrName != "" {
+		args = append(args, "--vault", vaultIDOrName)
+	}
 
-    out, err := c.runOpWithInput("item", args, stdinBytes)
-    if err != nil {
-        return nil, err
-    }
+	out, err := c.runOpWithInput("item", args, stdinBytes)
+	if err != nil {
+		return nil, err
+	}
 
-    var arr []*Item
-    if err := json.Unmarshal(out, &arr); err == nil {
-        return arr, nil
-    }
+	var arr []*Item
+	if err := json.Unmarshal(out, &arr); err == nil {
+		return arr, nil
+	}
 
-    dec := json.NewDecoder(bytes.NewReader(out))
-    var items []*Item
-    for {
-        var it Item
-        if err := dec.Decode(&it); err != nil {
-            if errors.Is(err, io.EOF) {
-                break
-            }
-            return nil, err
-        }
-        itCopy := it
-        items = append(items, &itCopy)
-    }
-    return items, nil
+	dec := json.NewDecoder(bytes.NewReader(out))
+	var items []*Item
+	for {
+		var it Item
+		if err := dec.Decode(&it); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return nil, err
+		}
+		itCopy := it
+		items = append(items, &itCopy)
+	}
+	return items, nil
 }
 
 // Items returns items by IDs or names across all accessible vaults using a
 // single `op item get -` invocation. See VaultItems for input format details.
 func (c *Client) Items(itemIDsOrNames []string) ([]*Item, error) {
-    return c.VaultItems(itemIDsOrNames, "")
+	return c.VaultItems(itemIDsOrNames, "")
 }
 
 // ReadItemField does a lookup of a specific field within an item, within a vault
@@ -241,11 +245,52 @@ func (c *Client) Read(lookupIdentifier string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+// ConstructItemFieldRef constructs a full op:// URI for a specific field within an item, within a vault.
+func (c *Client) ConstructItemFieldRef(vaultIdOrName string, itemIdOrName string, fieldName string) string {
+	return fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
+}
+
 // ReadItemField does a lookup of a specific field within an item, within a vault
 // This is equivalent to `op read op://<vault>/<item>/<field>`
 func (c *Client) ReadItemField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error) {
-	lookupString := fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
-	return c.Read(lookupString)
+	return c.Read(c.ConstructItemFieldRef(vaultIdOrName, itemIdOrName, fieldName))
+}
+
+// ReadMulti fetches multiple secret references in a single op inject invocation.
+// Each reference should be a full op:// URI (e.g., "op://vault/item/field").
+// Returns a map keyed by the input reference with the resolved secret value.
+// Uses `op inject` with a JSON template to batch-resolve all references at once.
+func (c *Client) ReadMulti(refs []string) (map[string]string, error) {
+	if len(refs) == 0 {
+		return map[string]string{}, nil
+	}
+
+	template := make(map[int]string, len(refs))
+	for i, ref := range refs {
+		template[i] = fmt.Sprintf("{{ %s }}", ref)
+	}
+
+	templateBytes, err := json.Marshal(template)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := c.runOpWithInput("inject", []string{}, templateBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	var intermediate map[int]string
+	if err := json.Unmarshal(out, &intermediate); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]string, len(refs))
+	for i, ref := range refs {
+		result[ref] = intermediate[i]
+	}
+
+	return result, nil
 }
 
 // EditItemField edits the fields of a specific item.
