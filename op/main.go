@@ -223,6 +223,12 @@ func (c *Client) VaultItems(itemIDsOrNames []string, vaultIDOrName string) ([]*I
     return items, nil
 }
 
+// Items returns items by IDs or names across all accessible vaults using a
+// single `op item get -` invocation. See VaultItems for input format details.
+func (c *Client) Items(itemIDsOrNames []string) ([]*Item, error) {
+    return c.VaultItems(itemIDsOrNames, "")
+}
+
 // ReadItemField does a lookup of a specific field within an item, within a vault
 // `lookupIdentifier` is a string in the format `op://<vault>/<item>/<field>`
 // This is equivalent to `op read op://<vault>/<item>/<field>`
