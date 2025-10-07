@@ -52,6 +52,11 @@ type Item struct {
 	Version int `json:"version"`
 }
 
+// ItemFieldRef constructs a full op:// URI for a specific field within an item, within a vault.
+func ItemFieldRef(vaultIdOrName string, itemIdOrName string, fieldName string) string {
+	return fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
+}
+
 func NewOpClient() *Client {
 	return &Client{}
 }
@@ -245,15 +250,10 @@ func (c *Client) Read(lookupIdentifier string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-// ConstructItemFieldRef constructs a full op:// URI for a specific field within an item, within a vault.
-func (c *Client) ConstructItemFieldRef(vaultIdOrName string, itemIdOrName string, fieldName string) string {
-	return fmt.Sprintf("op://%s/%s/%s", vaultIdOrName, itemIdOrName, fieldName)
-}
-
 // ReadItemField does a lookup of a specific field within an item, within a vault
 // This is equivalent to `op read op://<vault>/<item>/<field>`
 func (c *Client) ReadItemField(vaultIdOrName string, itemIdOrName string, fieldName string) (string, error) {
-	return c.Read(c.ConstructItemFieldRef(vaultIdOrName, itemIdOrName, fieldName))
+	return c.Read(ItemFieldRef(vaultIdOrName, itemIdOrName, fieldName))
 }
 
 // ReadMulti fetches multiple secret references in a single op inject invocation.
